@@ -1,5 +1,89 @@
 #+PROPERTY: header-args :tangle yes
 * Emacs
+** Table of Contents                                                 :TOC_6:
+- [[#emacs][Emacs]]
+  - [[#applications][Applications]]
+    - [[#erc][ERC]]
+      - [[#notifications][Notifications]]
+      - [[#reconnecting][Reconnecting]]
+      - [[#znc][ZNC]]
+    - [[#gnus][Gnus]]
+    - [[#org][Org]]
+      - [[#agenda][Agenda]]
+      - [[#appearance][Appearance]]
+      - [[#capture][Capture]]
+      - [[#code-blocks][Code Blocks]]
+      - [[#table-of-contents][Table of Contents]]
+  - [[#better-defaults][Better Defaults]]
+  - [[#buffer-management][Buffer Management]]
+    - [[#scratch-buffers][Scratch Buffers]]
+  - [[#display--interface][Display / Interface]]
+    - [[#frames][Frames]]
+    - [[#line-numbers][Line Numbers]]
+    - [[#mode-line][Mode Line]]
+    - [[#selection][Selection]]
+    - [[#theme][Theme]]
+    - [[#toolbars][Toolbars]]
+    - [[#windows][Windows]]
+    - [[#zooming][Zooming]]
+  - [[#editing][Editing]]
+    - [[#auto-pair][Auto Pair]]
+    - [[#completion][Completion]]
+    - [[#filling][Filling]]
+    - [[#highlighting][Highlighting]]
+    - [[#indentation][Indentation]]
+    - [[#movement][Movement]]
+      - [[#jumping][Jumping]]
+    - [[#multiple-cursors][Multiple Cursors]]
+    - [[#selection-1][Selection]]
+    - [[#structured-editing][Structured Editing]]
+    - [[#templates][Templates]]
+    - [[#undo][Undo]]
+    - [[#whitespace][Whitespace]]
+  - [[#file-management][File Management]]
+    - [[#dired][Dired]]
+      - [[#git-status-and-more-colors][Git Status and More Colors]]
+      - [[#icons][Icons]]
+      - [[#inline-subtree-navigation][Inline Subtree Navigation]]
+    - [[#tramp][TRAMP]]
+  - [[#keys][Keys]]
+    - [[#completion-1][Completion]]
+  - [[#languages--major-modes][Languages / Major Modes]]
+    - [[#cc][C/C++]]
+      - [[#function-arguments][Function Arguments]]
+    - [[#coffeescript][CoffeeScript]]
+    - [[#common-lisp][Common Lisp]]
+      - [[#function-arguments-1][Function Arguments]]
+      - [[#slime][SLIME]]
+    - [[#emacs-lisp][Emacs Lisp]]
+      - [[#common-lisp-compatibility][Common Lisp Compatibility]]
+      - [[#function-arguments-2][Function Arguments]]
+    - [[#gherkin][Gherkin]]
+    - [[#haml][HAML]]
+    - [[#html][HTML]]
+    - [[#javascript][JavaScript]]
+      - [[#jsx][JSX]]
+    - [[#json][JSON]]
+    - [[#lua][Lua]]
+    - [[#perl][Perl]]
+    - [[#ruby][Ruby]]
+      - [[#bundler][Bundler]]
+      - [[#rails][Rails]]
+      - [[#robe][Robe]]
+      - [[#rspec-mode][RSpec Mode]]
+      - [[#rubocop][Rubocop]]
+    - [[#shell][Shell]]
+    - [[#slim][Slim]]
+    - [[#yaml][YAML]]
+  - [[#project-management][Project Management]]
+  - [[#session-management][Session Management]]
+  - [[#syntax-checking][Syntax Checking]]
+  - [[#version-control][Version Control]]
+    - [[#history-browsing][History Browsing]]
+    - [[#line-status-indicator][Line Status Indicator]]
+    - [[#magit][Magit]]
+    - [[#open-in-browser][Open In Browser]]
+
 ** Applications
 Full-blown stand-alone applications inside Emacs.
 *** ERC
@@ -100,6 +184,12 @@ Add BBDB for contact management.
 #+BEGIN_SRC emacs-lisp
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively t)
+#+END_SRC
+**** Table of Contents
+#+BEGIN_SRC emacs-lisp
+  (use-package toc-org
+    :hook
+    (org-mode . toc-org-enable))
 #+END_SRC
 ** Better Defaults
 Better defaults for core Emacs things.
