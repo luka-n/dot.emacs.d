@@ -1,0 +1,11 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: component
+# key: c
+# --
+class ${1:name} extends Component {
+  render() {
+    return (
+      <div>$0</div>
+    );
+  }
+}

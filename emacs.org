@@ -1,8 +1,772 @@
 #+PROPERTY: header-args :tangle yes
 * Emacs
-** Scratch
+** Applications
+Full-blown stand-alone applications inside Emacs.
+*** ERC
+Don't spam channels with joins/parts.
+
 #+BEGIN_SRC emacs-lisp
-  (let ((scratch-file (expand-file-name "scratch.el" user-emacs-directory)))
-    (if (file-exists-p scratch-file)
-        (load scratch-file)))
+  (setq erc-hide-list '("JOIN" "PART" "QUIT"))
+#+END_SRC
+
+Of course give server buffers proper names...
+
+#+BEGIN_SRC emacs-lisp
+  (setq erc-rename-buffers t)
+#+END_SRC
+
+Highlight nicknames with unique colors.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package erc-hl-nicks)
+#+END_SRC
+**** Notifications
+Will configure proper notifications some day, for now this is just channel
+tracking.
+
+Channel tracking is enabled by default. Let's just ignore some noise.
+
+#+BEGIN_SRC emacs-lisp
+  (setq erc-track-exclude-server-buffer t
+        erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
+                                  "324" "329" "332" "333" "353" "477")
+        erc-track-shorten-start 3
+        erc-track-visibility 'selected-visible)
+
+#+END_SRC
+**** Reconnecting
+Auto reconnect is quite troublesome. It would be great if ERC could watch for
+network status changes, disconnect when the network goes down, and reconnect
+once it comes back up. Could be done through NetworkManager's D-Bus interface.
+
+#+BEGIN_SRC emacs-lisp
+  (setq erc-server-auto-reconnect nil)
+#+END_SRC
+**** ZNC
+Integrate with ZNC.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package znc
+    :init
+    (setq znc-detatch-on-kill nil))
+#+END_SRC
+*** Gnus
+Actual account configuration should be in scratch.el.
+
+Archive nothing, it's on the server.
+
+#+BEGIN_SRC emacs-lisp
+  (setq gnus-message-archive-group nil)
+#+END_SRC
+
+Group by topic.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+#+END_SRC
+
+Add BBDB for contact management.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package bbdb
+    :config
+    (bbdb-initialize 'gnus 'message)
+    (bbdb-mua-auto-update-init 'gnus 'message))
+#+END_SRC
+*** Org
+**** Agenda
+#+BEGIN_SRC emacs-lisp
+  (setq org-agenda-files `(,org-directory))
+#+END_SRC
+**** Appearance
+#+BEGIN_SRC emacs-lisp
+  (use-package org-indent
+    :diminish org-indent-mode
+    :init
+    (setq org-startup-indented t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :hook
+    (org-mode . org-bullets-mode))
+#+END_SRC
+**** Capture
+#+BEGIN_SRC emacs-lisp
+  (setq org-default-notes-file
+        (expand-file-name "notes.org" org-directory))
+#+END_SRC
+**** Code Blocks
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t
+        org-src-tab-acts-natively t)
+#+END_SRC
+** Better Defaults
+Better defaults for core Emacs things.
+
+Like shorter yes-or-no prompts.
+
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+And don't leave backup files lying around, I have no use for them.
+
+#+BEGIN_SRC emacs-lisp
+  (setq auto-save-default nil)            ; #* files
+  (setq make-backup-files nil)            ; *~ files
+#+END_SRC
+
+Use regexp search by default.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key global-map (kbd "C-r") 'isearch-backward-regexp)
+  (define-key global-map (kbd "C-s") 'isearch-forward-regexp)
+#+END_SRC
+
+Some more unrelated settings--
+
+#+BEGIN_SRC emacs-lisp
+  (setq echo-keystrokes 0.1
+        inhibit-startup-screen t
+        initial-major-mode 'emacs-lisp-mode
+        scroll-conservatively 100
+        uniquify-buffer-name-style 'forward
+        mouse-yank-at-point t)
+#+END_SRC
+** Buffer Management
+Use Ibuffer.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key global-map (kbd "C-x C-b") 'ibuffer)
+#+END_SRC
+*** Scratch Buffers
+Easily jump to scratch buffer for current major mode.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package scratch)
+#+END_SRC
+** Display / Interface
+*** Frames
+Include current buffer name in frame title.
+
+#+BEGIN_SRC emacs-lisp
+  (setq frame-title-format
+        (concat "%b" " - " (invocation-name) "@" (system-name)))
+#+END_SRC
+*** Line Numbers
+#+BEGIN_SRC emacs-lisp
+  (use-package linum-mode
+    :hook prog-mode)
+#+END_SRC
+*** Mode Line
+Show also the column number besides the line number in mode line.
+
+#+BEGIN_SRC emacs-lisp
+  (setq column-number-mode t)
+#+END_SRC
+
+Pretty pretty spaceline.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package spaceline
+    :config
+    (require 'spaceline-config)
+    (spaceline-spacemacs-theme)
+    (spaceline-toggle-buffer-encoding-abbrev-off)
+    (spaceline-toggle-buffer-size-off)
+    (spaceline-toggle-hud-off))
+#+END_SRC
+
+Use anzu to show search status.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package anzu
+    :diminish anzu-mode
+    :bind
+    (("M-%" . 'anzu-query-replace)
+     ("C-M-%" . 'anzu-query-replace-regexp))
+    :config
+    (global-anzu-mode))
+#+END_SRC
+*** Selection
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :diminish helm-mode
+    :bind
+    (("C-h a" . 'helm-apropos)
+     ("C-x C-f" . 'helm-find-files)
+     ("C-x C-m" . 'helm-M-x)
+     ("C-x b" . 'helm-mini)
+     ("M-x" . 'helm-M-x)
+     ("M-y" . 'helm-show-kill-ring)
+     :map helm-map
+     ("<tab>" . 'helm-execute-persistent-action)
+     ("C-i" . 'helm-execute-persistent-action)
+     ("C-z" . 'helm-select-action))
+    :init
+    (setq helm-split-window-default-side 'same)
+    :config
+    (require 'helm-config)
+    (helm-mode))
+#+END_SRC
+
+Also throw in helm-descbinds:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-descbinds
+    :config
+    (helm-descbinds-mode))
+#+END_SRC
+*** Theme
+#+BEGIN_SRC emacs-lisp
+  (use-package cyberpunk-theme
+    :config
+    (load-theme 'cyberpunk t))
+#+END_SRC
+*** Toolbars
+No, please, and thank you.
+
+#+BEGIN_SRC emacs-lisp
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+#+END_SRC
+*** Windows
+Nicely allow for undoing window configuration changes.
+
+#+BEGIN_SRC emacs-lisp
+  (winner-mode)
+#+END_SRC
+
+Faster window switching.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key global-map (kbd "<C-tab>") 'other-window)
+#+END_SRC
+
+Try to establish with Emacs an understanding,
+that windows must not be disturbed?
+
+#+BEGIN_SRC emacs-lisp
+  (setq display-buffer-base-action '(display-buffer-same-window))
+#+END_SRC
+
+That goes for you too, Org Mode!
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-window-setup 'current-window)
+#+END_SRC
+*** Zooming
+I just want a global zoom, why so difficult?
+
+#+BEGIN_SRC emacs-lisp
+  (use-package default-text-scale
+    :init
+    (setq default-text-scale-amount 20)
+    :bind
+    (("C-+" . 'default-text-scale-increase)
+     ("C--" . 'default-text-scale-decrease)
+     ("C-0" . 'default-text-scale-reset))
+    :config
+    (default-text-scale-mode))
+#+END_SRC
+
+Need to define our own reset function--
+
+#+BEGIN_SRC emacs-lisp
+  (defvar default-text-scale-default-height 105)
+
+  (defun default-text-scale-reset ()
+    (interactive)
+    (default-text-scale-increment
+      (- default-text-scale-default-height
+         (face-attribute 'default :height))))
+#+END_SRC
+** Editing
+*** Auto Pair
+#+BEGIN_SRC emacs-lisp
+  (electric-pair-mode)
+#+END_SRC
+*** Completion
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :diminish company-mode
+    :init
+    (setq company-idle-delay 0.1
+          company-minimum-prefix-length 2
+          company-selection-wrap-around t)
+    :config
+    (global-company-mode))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-company
+    :after company
+    :bind
+    (:map company-mode-map
+     ("C-:" . 'helm-company)
+     :map company-active-map
+     ("C-:" . 'helm-company)))
+#+END_SRC
+*** Filling
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
+  (add-hook 'text-mode-hook (lambda () (setq fill-column 72)))
+#+END_SRC
+*** Highlighting
+Always highlight matching parens.
+
+#+BEGIN_SRC emacs-lisp
+  (show-paren-mode)
+#+END_SRC
+
+Highlight current line.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package hl-line
+    :hook
+    ((prog-mode text-mode) . hl-line-mode))
+#+END_SRC
+
+Also highlight surrounding parentheses.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package highlight-parentheses
+    :diminish highlight-parentheses-mode
+    :hook
+    ((emacs-lisp-mode lisp-mode) . highlight-parentheses-mode)
+    :init
+    (setq hl-paren-colors '("#2aa198"
+                            "#b58900"
+                            "#268bd2"
+                            "#6c71c4"
+                            "#859900"
+                            "#b58900"
+                            "#268bd2"
+                            "#6c71c4"
+                            "#859900")))
+#+END_SRC
+
+Highlight regions affected by undo, yank, kill, and some others.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package volatile-highlights
+    :diminish volatile-highlights-mode
+    :custom-face
+    (vhl/default-face ((t (:background "#077f07"))))
+    :config
+    (volatile-highlights-mode))
+#+END_SRC
+*** Indentation
+#+BEGIN_SRC emacs-lisp
+  (setq standard-indent 2)
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
+Try to be smart about file local indentation styles.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dtrt-indent
+    :diminish dtrt-indent-mode
+    :config
+    (dtrt-indent-global-mode))
+#+END_SRC
+*** Movement
+Recognize subwords.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package subword
+    :diminish subword-mode
+    :config
+    (subword-mode))
+#+END_SRC
+**** Jumping
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-jump-mode
+    :init
+    (setq ace-jump-mode-scope 'window)
+    :bind
+    (("C-c SPC" . ace-jump-mode)))
+#+END_SRC
+
+Define a special Ace Jump command to jump to parens.
+
+#+BEGIN_SRC emacs-lisp
+  (defun ace-jump-parentheses ()
+    (interactive)
+    (ace-jump-char-mode ?\())
+
+  (define-key emacs-lisp-mode-map (kbd "C-c SPC") 'ace-jump-parentheses)
+  (define-key lisp-mode-map (kbd "C-c SPC") 'ace-jump-parentheses)
+#+END_SRC
+*** Multiple Cursors
+#+BEGIN_SRC emacs-lisp
+  (use-package multiple-cursors
+    :bind
+    (("C-S-c C-S-c" . 'mc/edit-lines)
+     ("C->" . 'mc/mark-next-like-this)
+     ("C-<" . 'mc/mark-previous-like-this)
+     ("C-c C-<" . 'mc/mark-all-like-this)))
+#+END_SRC
+*** Selection
+#+BEGIN_SRC emacs-lisp
+  (use-package expand-region
+    :bind
+    (("C-=" . 'er/expand-region)))
+#+END_SRC
+*** Structured Editing
+#+BEGIN_SRC emacs-lisp
+  (use-package paredit
+    :diminish paredit-mode
+    :hook ((emacs-lisp-mode lisp-mode) . paredit-mode))
+#+END_SRC
+*** Templates
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :diminish yas-minor-mode
+    :config
+    (yas-global-mode))
+#+END_SRC
+*** Undo
+#+BEGIN_SRC emacs-lisp
+  (use-package undo-tree
+    :diminish undo-tree-mode
+    :config
+    (global-undo-tree-mode))
+#+END_SRC
+*** Whitespace
+#+BEGIN_SRC emacs-lisp
+  (use-package whitespace
+    :diminish whitespace-mode
+    :init
+    (setq whitespace-line-column nil      ; use fill-column
+          whitespace-style
+          '(face trailing lines-tail empty tabs tab-mark))
+    :hook
+    (prog-mode . whitespace-mode)
+    :custom-face
+    (whitespace-trailing ((t (:background "#f00")))))
+#+END_SRC
+** File Management
+*** Dired
+Let's not litter dired buffers everywhere; reuse current buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-single
+    :after dired
+    :config
+    (define-key dired-mode-map [return] 'dired-single-buffer)
+    (define-key dired-mode-map [mouse-1] 'dired-single-buffer-mouse)
+    (define-key dired-mode-map "^"
+      (function
+       (lambda () (interactive) (dired-single-buffer "..")))))
+#+END_SRC
+**** Git Status and More Colors
+Might have issues cleaning up its locks. See--
+
+https://github.com/syohex/emacs-dired-k/issues/45
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-k
+    :init
+    (add-hook 'dired-after-readin-hook #'dired-k-no-revert)
+    (add-hook 'dired-initial-position-hook 'dired-k)
+    :config
+    (define-key dired-mode-map (kbd "g") 'dired-k))
+#+END_SRC
+**** Icons
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons-dired
+    :hook
+    (dired-mode . all-the-icons-dired-mode))
+#+END_SRC
+**** Inline Subtree Navigation
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-hacks-utils
+    :init
+    (define-key dired-mode-map (kbd "TAB") 'dired-subtree-toggle))
+#+END_SRC
+*** TRAMP
+#+BEGIN_SRC emacs-lisp
+  (setq tramp-default-method "ssh")
+#+END_SRC
+** Keys
+*** Completion
+Popup possible completions for incomplete key commands.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :diminish which-key-mode
+    :config
+    (which-key-mode))
+#+END_SRC
+** Languages / Major Modes
+*** C/C++
+**** Function Arguments
+#+BEGIN_SRC emacs-lisp
+  (use-package c-eldoc
+    :diminish eldoc-mode
+    :hook
+    ((c-mode c++-mode) . c-turn-on-eldoc-mode))
+#+END_SRC
+*** CoffeeScript
+#+BEGIN_SRC emacs-lisp
+  (use-package coffee-mode
+    :init
+    (setq coffee-tab-width 2))
+#+END_SRC
+*** Common Lisp
+**** Function Arguments
+#+BEGIN_SRC emacs-lisp
+  (use-package eldoc
+    :diminish eldoc-mode
+    :hook
+    (lisp-mode . eldoc-mode))
+#+END_SRC
+**** SLIME
+#+BEGIN_SRC emacs-lisp
+  (use-package slime
+    :init
+    (setq inferior-lisp-program "/usr/bin/sbcl")
+    :bind
+    (:map slime-prefix-map
+     ("M-h" . 'slime-documentation-lookup))
+    :config
+    (add-to-list 'slime-contribs 'slime-fancy)
+    (slime-setup))
+
+  (use-package slime-company
+    :after slime
+    :config
+    (add-to-list 'slime-contribs 'slime-company)
+    (slime-setup))
+#+END_SRC
+*** Emacs Lisp
+**** Common Lisp Compatibility
+Make emacs-lisp-mode behave more like we're used to from lisp-mode.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-k") 'eval-buffer)
+#+END_SRC
+
+Along with SLIME navigation.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package elisp-slime-nav
+    :diminish elisp-slime-nav-mode
+    :hook
+    (emacs-lisp-mode . elisp-slime-nav-mode))
+#+END_SRC
+**** Function Arguments
+#+BEGIN_SRC emacs-lisp
+  (use-package eldoc
+    :diminish eldoc-mode
+    :hook
+    (emacs-lisp-mode . eldoc-mode))
+#+END_SRC
+*** Gherkin
+#+BEGIN_SRC emacs-lisp
+  (use-package feature-mode)
+#+END_SRC
+*** HAML
+#+BEGIN_SRC emacs-lisp
+  (use-package haml-mode)
+#+END_SRC
+*** HTML
+#+BEGIN_SRC emacs-lisp
+  (use-package web-mode
+    :init
+    (setq web-mode-block-padding 2
+          web-mode-script-padding 2
+          web-mode-style-padding 2)
+    :mode
+    ("\\.[agj]sp\\'"
+     "\\.as[cp]x\\'"
+     "\\.djhtml\\'"
+     "\\.erb\\'"
+     "\\.html?\\'"
+     "\\.mustache\\'"
+     "\\.phtml\\'"
+     "\\.tpl\\.php\\'"))
+#+END_SRC
+*** JavaScript
+#+BEGIN_SRC emacs-lisp
+  (use-package js2-mode
+    :init
+    (setq js2-strict-missing-semi-warning nil
+          js2-strict-trailing-comma-warning nil)
+    :interpreter "node"
+    :mode "\\.js\\'")
+#+END_SRC
+**** JSX
+Use rjsx-mode for this, for now. Works better than js2-jsx-mode.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rjsx-mode :mode "\\.jsx\\'")
+#+END_SRC
+*** JSON
+#+BEGIN_SRC emacs-lisp
+  (use-package json-mode)
+#+END_SRC
+*** Lua
+#+BEGIN_SRC emacs-lisp
+  (use-package lua-mode
+    :interpreter "lua"
+    :mode "\\.lua\\'")
+#+END_SRC
+*** Perl
+#+BEGIN_SRC emacs-lisp
+  (defalias 'perl-mode 'cperl-mode)
+#+END_SRC
+*** Ruby
+#+BEGIN_SRC emacs-lisp
+  (use-package ruby-mode
+    :mode
+    ("Capfile\\'"
+     "Gemfile\\'"
+     "Guardfile\\'"
+     "Rakefile\\'"
+     "\\.rake\\'"
+     "config\\.ru\\'"))
+#+END_SRC
+**** Bundler
+#+BEGIN_SRC emacs-lisp
+  (use-package bundler)
+#+END_SRC
+**** Rails
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile-rails
+    :diminish projectile-rails-mode
+    :config
+    (projectile-rails-global-mode))
+#+END_SRC
+**** Robe
+#+BEGIN_SRC emacs-lisp
+  (use-package robe
+    :diminish robe-mode
+    :hook
+    (ruby-mode . robe-mode)
+    :config
+    (with-eval-after-load 'company
+      (add-to-list 'company-backends 'company-robe)))
+#+END_SRC
+**** RSpec Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package rspec-mode
+    :config
+    (rspec-install-snippets))
+#+END_SRC
+**** Rubocop
+#+BEGIN_SRC emacs-lisp
+  (use-package rubocop
+    :hook (ruby-mode . rubocop-mode))
+#+END_SRC
+*** Shell
+#+BEGIN_SRC emacs-lisp
+  (setq sh-basic-offset 2)
+  (setq sh-indentation 2)
+#+END_SRC
+*** Slim
+#+BEGIN_SRC emacs-lisp
+  (use-package slim-mode)
+#+END_SRC
+*** YAML
+#+BEGIN_SRC emacs-lisp
+  (use-package yaml-mode
+    :mode "\\.yml\\'")
+#+END_SRC
+** Project Management
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :config
+    (projectile-mode))
+#+END_SRC
+
+Definitely use with Helm.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-projectile
+    :config
+    (helm-projectile-on))
+#+END_SRC
+** Session Management
+Remember things.
+
+#+BEGIN_SRC emacs-lisp
+  (savehist-mode)
+  (toggle-save-place-globally)
+#+END_SRC
+** Syntax Checking
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :diminish flycheck-mode
+    :init
+    (setq flycheck-indication-mode nil)
+    :config
+    (global-flycheck-mode))
+#+END_SRC
+** Version Control
+*** History Browsing
+#+BEGIN_SRC emacs-lisp
+  (use-package git-timemachine)
+#+END_SRC
+*** Line Status Indicator
+#+BEGIN_SRC emacs-lisp
+  (use-package git-gutter-fringe
+    :diminish git-gutter-mode
+    :config
+    (global-git-gutter-mode)
+    (fringe-helper-define 'git-gutter-fr:added nil
+      ".XXXXXX."
+      "XX....XX"
+      "X......X"
+      "X......X"
+      "XXXXXXXX"
+      "XXXXXXXX"
+      "X......X"
+      "X......X")
+    (fringe-helper-define 'git-gutter-fr:deleted nil
+      "XXXXXX.."
+      "XX....X."
+      "XX.....X"
+      "XX.....X"
+      "XX.....X"
+      "XX.....X"
+      "XX....X."
+      "XXXXXX..")
+    (fringe-helper-define 'git-gutter-fr:modified nil
+      "XXXXXXXX"
+      "X..XX..X"
+      "X..XX..X"
+      "X..XX..X"
+      "X..XX..X"
+      "X..XX..X"
+      "X..XX..X"
+      "X..XX..X"))
+#+END_SRC
+*** Magit
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :config
+    (define-key magit-mode-map [C-tab] nil)
+    (global-magit-file-mode))
+#+END_SRC
+
+Add magithub, perhaps one day it will become useful.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magithub
+    :after magit
+    :init
+    (setq magithub-clone-default-directory "~/projects")
+    :config
+    (magithub-feature-autoinject t))
+#+END_SRC
+*** Open In Browser
+#+BEGIN_SRC emacs-lisp
+  (use-package git-link
+    :init
+    (setq git-link-open-in-browser t))
 #+END_SRC

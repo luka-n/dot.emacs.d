@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: cucumber-when
+# key: When
+# --
+When(/^${1:step}$/) do
+  $0
+end

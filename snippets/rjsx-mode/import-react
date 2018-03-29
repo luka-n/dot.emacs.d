@@ -1,0 +1,5 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: import-react
+# key: ir
+# --
+import React from "react";
