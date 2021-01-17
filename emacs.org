@@ -43,7 +43,6 @@
   - [[#file-management][File Management]]
     - [[#dired][Dired]]
       - [[#git-status-and-more-colors][Git Status and More Colors]]
-      - [[#icons][Icons]]
       - [[#inline-subtree-navigation][Inline Subtree Navigation]]
     - [[#tramp][TRAMP]]
   - [[#keys][Keys]]
@@ -55,6 +54,7 @@
     - [[#common-lisp][Common Lisp]]
       - [[#function-arguments-1][Function Arguments]]
       - [[#slime][SLIME]]
+    - [[#dockerfile][Dockerfile]]
     - [[#emacs-lisp][Emacs Lisp]]
       - [[#common-lisp-compatibility][Common Lisp Compatibility]]
       - [[#function-arguments-2][Function Arguments]]
@@ -168,12 +168,6 @@ Add BBDB for contact management.
     :diminish org-indent-mode
     :init
     (setq org-startup-indented t))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-  (use-package org-bullets
-    :hook
-    (org-mode . org-bullets-mode))
 #+END_SRC
 **** Capture
 #+BEGIN_SRC emacs-lisp
@@ -353,7 +347,7 @@ I just want a global zoom, why so difficult?
 #+BEGIN_SRC emacs-lisp
   (use-package default-text-scale
     :init
-    (setq default-text-scale-amount 20)
+    (setq default-text-scale-amount 10)
     :bind
     (("C-+" . 'default-text-scale-increase)
      ("C--" . 'default-text-scale-decrease)
@@ -365,7 +359,7 @@ I just want a global zoom, why so difficult?
 Need to define our own reset function--
 
 #+BEGIN_SRC emacs-lisp
-  (defvar default-text-scale-default-height 105)
+  (defvar default-text-scale-default-height 90)
 
   (defun default-text-scale-reset ()
     (interactive)
@@ -469,7 +463,7 @@ Recognize subwords.
   (use-package subword
     :diminish subword-mode
     :config
-    (subword-mode))
+    (global-subword-mode))
 #+END_SRC
 **** Jumping
 #+BEGIN_SRC emacs-lisp
@@ -530,7 +524,7 @@ Define a special Ace Jump command to jump to parens.
   (use-package whitespace
     :diminish whitespace-mode
     :init
-    (setq whitespace-line-column nil      ; use fill-column
+    (setq whitespace-line-column 80       ; use fill-column
           whitespace-style
           '(face trailing lines-tail empty tabs tab-mark))
     :hook
@@ -565,15 +559,9 @@ https://github.com/syohex/emacs-dired-k/issues/45
     :config
     (define-key dired-mode-map (kbd "g") 'dired-k))
 #+END_SRC
-**** Icons
-#+BEGIN_SRC emacs-lisp
-  (use-package all-the-icons-dired
-    :hook
-    (dired-mode . all-the-icons-dired-mode))
-#+END_SRC
 **** Inline Subtree Navigation
 #+BEGIN_SRC emacs-lisp
-  (use-package dired-hacks-utils
+  (use-package dired-subtree
     :init
     (define-key dired-mode-map (kbd "TAB") 'dired-subtree-toggle))
 #+END_SRC
@@ -631,6 +619,10 @@ Popup possible completions for incomplete key commands.
     :config
     (add-to-list 'slime-contribs 'slime-company)
     (slime-setup))
+#+END_SRC
+*** Dockerfile
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode)
 #+END_SRC
 *** Emacs Lisp
 **** Common Lisp Compatibility
@@ -770,6 +762,8 @@ Use rjsx-mode for this, for now. Works better than js2-jsx-mode.
 ** Project Management
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
     :config
     (projectile-mode))
 #+END_SRC
@@ -840,19 +834,7 @@ Remember things.
 #+BEGIN_SRC emacs-lisp
   (use-package magit
     :config
-    (define-key magit-mode-map [C-tab] nil)
-    (global-magit-file-mode))
-#+END_SRC
-
-Add magithub, perhaps one day it will become useful.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package magithub
-    :after magit
-    :init
-    (setq magithub-clone-default-directory "~/projects")
-    :config
-    (magithub-feature-autoinject t))
+    (define-key magit-mode-map [C-tab] nil))
 #+END_SRC
 *** Open In Browser
 #+BEGIN_SRC emacs-lisp

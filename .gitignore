@@ -1,10 +1,15 @@
 auto-save-list/*
 custom.el
 elpa/*
+elpy/*
 emacs.el
+eshell/history
+eshell/lastdir
 history
 magithub/*
 network-security.data
 projectile-bookmarks.eld
 recentf
 scratch.el
+session.*
+tramp
